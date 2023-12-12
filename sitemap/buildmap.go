@@ -22,7 +22,7 @@ import (
 )
 
 // Sitemap function
-func Sitemap(urlstr string, depth int, out string) {
+func Sitemap(urlstr string, depth int, out string) error {
 	log.Printf("Writing To %s", out)
 	pages := bfs(urlstr, depth)
 	toXML := urlset{
@@ -34,7 +34,7 @@ func Sitemap(urlstr string, depth int, out string) {
 	}
 	f, err := os.Create(out)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer f.Close()
 	f.WriteString(xml.Header)
@@ -43,8 +43,10 @@ func Sitemap(urlstr string, depth int, out string) {
 	enc.Indent("", "  ")
 
 	if encErr := enc.Encode(toXML); encErr != nil {
-		panic(encErr)
+		return encErr
 	}
+	log.Printf("Finished Writing To %s", out)
+	return nil
 }
 
 const xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -107,7 +109,7 @@ func get(urlstr string) []string {
 
 	resp, err := http.Get(urlstr)
 	if err != nil {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
 	defer resp.Body.Close()
 
